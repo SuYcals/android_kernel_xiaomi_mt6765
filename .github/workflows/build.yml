@@ -29,26 +29,16 @@ jobs:
 
           mkdir -p out
 
-          # Kopyahin ang tamang defconfig patungo sa out/.config
-          if [ -f arch/arm64/configs/cereus_defconfig ]; then
-            cp arch/arm64/configs/cereus_defconfig out/.config
-          elif [ -f arch/arm64/configs/cactus_defconfig ]; then
-            cp arch/arm64/configs/cactus_defconfig out/.config
-          elif [ -f arch/arm64/configs/lotus_defconfig ]; then
-            cp arch/arm64/configs/lotus_defconfig out/.config
-          else
-            CONFIG_FILE=$(find arch/arm64/configs -maxdepth 1 -name "*_defconfig" | head -n 1)
-            cp "$CONFIG_FILE" out/.config
-          end
+          # Direktang kunin at kopyahin ang unang defconfig file sa folder
+          CONFIG_FILE=$(find arch/arm64/configs -maxdepth 1 -name "*_defconfig" | head -n 1)
+          cp "$CONFIG_FILE" out/.config
 
           # Paganahin ang KernelSU
           echo "CONFIG_KSU=y" >> out/.config
 
-          # I-run ang olddefconfig
+          # I-run ang olddefconfig at simulan ang compilation
           make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig HOSTCFLAGS="-Wno-error=dangling-pointer"
-
-          # I-compile nang may karagdagang flag para i-bypass ang array-compare at int-conversion errors sa lumang code
-          make -j$(nproc) O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- KCFLAGS="-w -Wno-error=array-compare -Wno-error=int-conversion -Wno-error=misleading-indentation"
+          make -j$(nproc) O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- KCFLAGS="-w -Wno-error=array-compare -Wno-error=int-conversion"
 
       - name: Upload Boot Image Artifact
         uses: actions/upload-artifact@v4
