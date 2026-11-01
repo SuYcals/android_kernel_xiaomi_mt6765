@@ -1,4 +1,4 @@
-name: Build Kernel for Redmi 6
+name: Build KernelSU for Redmi 6
 
 on:
   workflow_dispatch:
@@ -15,18 +15,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev bison flex libelf-dev clang lld llvm git curl
 
-      - name: Clone Kernel Source & KernelSU
+      - name: Inject KernelSU
         run: |
-          git clone --depth=1 https://github.com/SuYcals/android_kernel_xiaomi_mt6765.git kernel
-          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main kernel
+          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
 
       - name: Build Kernel Image
         run: |
-          cd kernel
           export ARCH=arm64
           export SUBARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
-          make O=out mrproper
           make O=out cereus_defconfig
           echo "CONFIG_KSU=y" >> out/.config
           make -j$(nproc) O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
@@ -35,4 +32,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: KSU-Kernel-cereus
-          path: kernel/out/arch/arm64/boot/Image.gz-dtb
+          path: out/arch/arm64/boot/Image.gz-dtb
