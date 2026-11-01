@@ -29,20 +29,22 @@ jobs:
 
           mkdir -p out
 
-          # Suriin at kopyahin ang tamang defconfig file patungo sa out/.config
+          # Tiyakin na direktang file ang kokopyahin patungo sa out/.config
           if [ -f arch/arm64/configs/cereus_defconfig ]; then
             cp arch/arm64/configs/cereus_defconfig out/.config
           elif [ -f arch/arm64/configs/cactus_defconfig ]; then
             cp arch/arm64/configs/cactus_defconfig out/.config
+          elif [ -f arch/arm64/configs/lotus_defconfig ]; then
+            cp arch/arm64/configs/lotus_defconfig out/.config
           else
-            CONFIG_FILE=$(ls arch/arm64/configs/ | grep -iE 'cereus|cactus|mt6765' | head -n 1)
-            cp arch/arm64/configs/$CONFIG_FILE out/.config
+            CONFIG_FILE=$(find arch/arm64/configs -maxdepth 1 -name "*_defconfig" | head -n 1)
+            cp "$CONFIG_FILE" out/.config
           fi
 
-          # Paganahin ang KernelSU sa config
+          # Paganahin ang KernelSU configuration
           echo "CONFIG_KSU=y" >> out/.config
 
-          # I-run ang olddefconfig at simulan ang compilation
+          # I-run ang olddefconfig at simulan ang build
           make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
           make -j$(nproc) O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
 
