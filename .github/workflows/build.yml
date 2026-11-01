@@ -1,4 +1,4 @@
-name: Build KernelSU for Redmi 6
+name: Build KernelSU for Redmi 6 (10-alps)
 
 on:
   workflow_dispatch:
@@ -9,6 +9,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          branch: 10-alps
 
       - name: Install Dependencies
         run: |
@@ -24,12 +26,23 @@ jobs:
           export ARCH=arm64
           export SUBARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
-          make O=out cereus_defconfig
+
+          # Hanapin ang tamang defconfig para sa alps branch
+          if [ -f arch/arm64/configs/cereus_defconfig ]; then
+            DEFCONFIG="cereus_defconfig"
+          elif [ -f arch/arm64/configs/cactus_defconfig ]; then
+            DEFCONFIG="cactus_defconfig"
+          else
+            DEFCONFIG=$(ls arch/arm64/configs/ | grep -iE 'cereus|cactus|mt6765' | head -n 1)
+          fi
+
+          echo "Gagamiting Config: $DEFCONFIG"
+          make O=out $DEFCONFIG
           echo "CONFIG_KSU=y" >> out/.config
           make -j$(nproc) O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
 
       - name: Upload Boot Image Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: KSU-Kernel-cereus
+          name: KSU-Kernel-cereus-alps
           path: out/arch/arm64/boot/Image.gz-dtb
