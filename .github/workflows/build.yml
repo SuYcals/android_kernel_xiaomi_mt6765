@@ -21,6 +21,13 @@ jobs:
         run: |
           curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
 
+      - name: Fix printk.c Argument Error
+        run: |
+          # Ayusin ang msg_print_text call sa kernel/printk/printk.c kung sobra ang arguments nito
+          if [ -f kernel/printk/printk.c ]; then
+            sed -i 's/msg_print_text(msg, prev, true, buff, sizeof(buff))/msg_print_text(msg, true, buff, sizeof(buff))/g' kernel/printk/printk.c
+          fi
+
       - name: Build Kernel Image
         run: |
           export ARCH=arm64
