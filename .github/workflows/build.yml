@@ -27,7 +27,7 @@ jobs:
           export SUBARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
 
-          # Hanapin ang tamang defconfig para sa alps branch
+          # Hanapin ang tamang defconfig
           if [ -f arch/arm64/configs/cereus_defconfig ]; then
             DEFCONFIG="cereus_defconfig"
           elif [ -f arch/arm64/configs/cactus_defconfig ]; then
@@ -37,8 +37,10 @@ jobs:
           fi
 
           echo "Gagamiting Config: $DEFCONFIG"
-          make O=out $DEFCONFIG
+          mkdir -p out
+          make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- $DEFCONFIG
           echo "CONFIG_KSU=y" >> out/.config
+          make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
           make -j$(nproc) O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
 
       - name: Upload Boot Image Artifact
