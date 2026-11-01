@@ -27,19 +27,22 @@ jobs:
           export SUBARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
 
-          # Hanapin ang tamang defconfig
+          mkdir -p out
+
+          # Suriin at kopyahin ang tamang defconfig file patungo sa out/.config
           if [ -f arch/arm64/configs/cereus_defconfig ]; then
-            DEFCONFIG="cereus_defconfig"
+            cp arch/arm64/configs/cereus_defconfig out/.config
           elif [ -f arch/arm64/configs/cactus_defconfig ]; then
-            DEFCONFIG="cactus_defconfig"
+            cp arch/arm64/configs/cactus_defconfig out/.config
           else
-            DEFCONFIG=$(ls arch/arm64/configs/ | grep -iE 'cereus|cactus|mt6765' | head -n 1)
+            CONFIG_FILE=$(ls arch/arm64/configs/ | grep -iE 'cereus|cactus|mt6765' | head -n 1)
+            cp arch/arm64/configs/$CONFIG_FILE out/.config
           fi
 
-          echo "Gagamiting Config: $DEFCONFIG"
-          mkdir -p out
-          make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- $DEFCONFIG
+          # Paganahin ang KernelSU sa config
           echo "CONFIG_KSU=y" >> out/.config
+
+          # I-run ang olddefconfig at simulan ang compilation
           make O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
           make -j$(nproc) O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
 
